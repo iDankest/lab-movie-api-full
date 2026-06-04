@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id        Int       @id @default(autoincrement())
+  nombre    String
+  email     String    @unique
+  password  String
+  rol       String    @default("user")
+  createdAt DateTime  @default(now())
+  resenas   Resena[]
+  favoritos Favorito[]
+}
+
+model Director {
+  id        Int       @id @default(autoincrement())
+  nombre    String    @unique
+  peliculas Pelicula[]
+}
+
+model Genero {
+  id        Int       @id @default(autoincrement())
+  nombre    String    @unique
+  slug      String    @unique
+  peliculas Pelicula[]
+}
+
+model Pelicula {
+  id         Int       @id @default(autoincrement())
+  titulo     String
+  anio       Int
+  nota       Float?
+  directorId Int
+  generoId   Int?
+  director   Director  @relation(fields: [directorId], references: [id])
+  genero     Genero?   @relation(fields: [generoId], references: [id])
+  createdAt  DateTime  @default(now())
+  resenas    Resena[]
+  favoritos  Favorito[]
+}
+
+model Resena {
+  id         Int      @id @default(autoincrement())
+  texto      String
+  puntuacion Int
+  pelicula   Pelicula @relation(fields: [peliculaId], references: [id])
+  peliculaId Int
+  usuario    Usuario  @relation(fields: [usuarioId], references: [id])
+  usuarioId  Int
+  createdAt  DateTime @default(now())
+}
+
+model Favorito {
+  id         Int      @id @default(autoincrement())
+  pelicula   Pelicula @relation(fields: [peliculaId], references: [id])
+  peliculaId Int
+  usuario    Usuario  @relation(fields: [usuarioId], references: [id])
+  usuarioId  Int
+  createdAt  DateTime @default(now())
+
+  @@unique([peliculaId, usuarioId])
+}
